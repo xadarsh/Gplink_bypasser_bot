@@ -18,9 +18,8 @@ async def start_command(client, message: Message):
     await message.reply(f"Hey {user_name} 👋, send me a gplink and I'll bypass it for you! 🚀")
 
 # Handle incoming links and bypass them using cloudscraper
-@app.on_message(filters.regex(r"gplink\.io/"))
+@app.on_message(filters.regex(r"(gplink\.io|gplinks\.co)/"))
 async def handle_gplink(client, message: Message):
-    # Extract gplink URL
     gplink = message.text
     scraper = cloudscraper.create_scraper()
 
