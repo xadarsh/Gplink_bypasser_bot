@@ -1,4 +1,4 @@
 cloudscraper
-aiohttp==3.8.1
+aiohttp>=3.8.1
 pyrogram
 tgcrypto
