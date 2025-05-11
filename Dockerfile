@@ -1,28 +1,31 @@
-FROM python:3.9-slim
+# Use a lightweight Python image
+FROM python:3.11-slim
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
-# Set working directory
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libffi-dev \
+    libssl-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
 WORKDIR /app
 
-# Install system dependencies including ntpdate for time sync
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends ntpdate gcc libffi-dev build-essential && \
-    rm -rf /var/lib/apt/lists/*
+# Copy only requirements first to leverage Docker caching
+COPY requirements.txt .
 
-# Sync time to fix Pyrogram msg_id issue
-RUN ntpdate -u pool.ntp.org
-
-# Optional: install TgCrypto for performance
-RUN pip install --no-cache-dir tgcrypto
-
-# Copy requirements and install dependencies
-COPY requirements.txt /app/
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
-COPY . /app/
+# Optional: Install TgCrypto for Pyrogram performance boost
+RUN pip install --no-cache-dir tgcrypto || true
+
+# Copy bot source code
+COPY . .
 
 # Run the bot
-CMD ["sh", "-c", "ntpdate -u pool.ntp.org && python app.py"]
+CMD ["python", "main.py"]
