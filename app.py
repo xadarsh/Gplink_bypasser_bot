@@ -1,59 +1,36 @@
 import os
 import cloudscraper
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
-# Get bot token from environment variable
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-API_ID = os.getenv("API_ID")
-API_HASH = os.getenv("API_HASH")
+# Get bot token, API ID, and API hash from environment variables
+API_ID = os.getenv('API_ID')
+API_HASH = os.getenv('API_HASH')
+BOT_TOKEN = os.getenv('BOT_TOKEN')
 
-scraper = cloudscraper.create_scraper()  # Cloudscraper instance
+# Create the Pyrogram bot client
+app = Client("gplink_bypass_bot", bot_token=BOT_TOKEN, api_id=API_ID, api_hash=API_HASH)
 
-# Function to start the bot and greet the user
-def start(update: Update, context: CallbackContext) -> None:
-    user = update.effective_user
-    update.message.reply_text(
-        f"Hey {user.first_name}👋, send me a gplink and I'll bypass it for you! 🌐🔗\n\nJust send the link and I'll handle the rest! 🚀"
-    )
+# /start command handler
+@app.on_message(filters.command("start"))
+async def start_command(client, message: Message):
+    user_name = message.from_user.first_name
+    await message.reply(f"Hey {user_name} 👋, send me a gplink and I'll bypass it for you! 🚀")
 
-# Function to detect and bypass the gplink
-def handle_message(update: Update, context: CallbackContext) -> None:
-    message = update.message.text
+# Handle incoming links and bypass them using cloudscraper
+@app.on_message(filters.regex(r"gplink\.io/"))
+async def handle_gplink(client, message: Message):
+    # Extract gplink URL
+    gplink = message.text
+    scraper = cloudscraper.create_scraper()
 
-    if "gplink" in message:  # Detect gplink URL
-        try:
-            # Bypass the link using cloudscraper
-            final_link = scraper.get(message).url
-            update.message.reply_text(
-                f"🚀 Link Bypassed! Here is your final destination link:\n{final_link} 🔗"
-            )
-        except Exception as e:
-            update.message.reply_text(
-                f"❌ Failed to bypass the link. Please try again later.\nError: {str(e)}"
-            )
-    else:
-        update.message.reply_text(
-            "I can only bypass gplinks. Please send me a valid gplink link."
-        )
+    try:
+        # Bypass the gplink and get the final URL
+        final_url = scraper.get(gplink).url
+        await message.reply(f"✅ Done! The bypassed link is: {final_url}")
+    except Exception as e:
+        await message.reply(f"❌ Error while bypassing: {e}")
 
-def main() -> None:
-    # Create the Updater and pass it your bot's token
-    updater = Updater(BOT_TOKEN)
-    dispatcher = updater.dispatcher
-
-    # Handle /start command
-    dispatcher.add_handler(CommandHandler("start", start))
-
-    # Handle any incoming message
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
-
-    # Start the bot
-    updater.start_polling()
-
-    # Run the bot until you send a signal (CTRL+C)
-    updater.idle()
-
-if __name__ == '__main__':
-    main()
-  
+# Run the bot
+if __name__ == "__main__":
+    app.run()
