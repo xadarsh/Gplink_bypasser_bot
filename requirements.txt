@@ -1,3 +1,4 @@
-pyrogram==2.0.0
-cloudscraper==1.2.58
+cloudscraper
 aiohttp==3.8.1
+pyrogram
+tgcrypto
