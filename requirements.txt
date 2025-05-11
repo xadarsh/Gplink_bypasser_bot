@@ -3,3 +3,4 @@ aiohttp>=3.8.1
 pyrogram
 tgcrypto
 flask
+beautifulsoup4
