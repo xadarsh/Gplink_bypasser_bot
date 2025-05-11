@@ -10,7 +10,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the bot.py script into the container
-COPY bot.py .
+COPY app.py .
 
 # Set environment variables (you can set these on Koyeb as well)
 ENV BOT_TOKEN=${BOT_TOKEN}
