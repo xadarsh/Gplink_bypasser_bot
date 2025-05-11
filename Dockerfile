@@ -15,4 +15,4 @@ ENV API_ID=${API_ID}
 ENV API_HASH=${API_HASH}
 
 # Run the bot when the container starts (updated to app.py)
-CMD ["python", "app.py"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "app:app"]
